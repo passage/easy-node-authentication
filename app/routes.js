@@ -1,10 +1,32 @@
+const restApi = require('./api/restapi.js');
+
 module.exports = function(app, passport) {
 
-// normal routes ===============================================================
+// =============================================================================
+// REST API ====================================================================
+// =============================================================================
 
+    //GET Devices information
+    app.get('/api/devices', isLoggedApi, restApi.getDevices);
+
+    //GET Device information
+    app.get('/api/device/:id', isLoggedApi, restApi.getDevice);
+
+    //Add new device
+    app.put('/api/device', isLoggedApi, restApi.addDevice);
+
+// normal routes ===============================================================
     // show the home page (will also have our login links)
     app.get('/', function(req, res) {
-        res.render('index.ejs');
+        //console.log("Zalogowany: ", req.isAuthenticated());
+        if (req.isAuthenticated() == true) {
+            res.render('profile.ejs', {
+                user : req.user
+            });
+        }
+        else {
+            res.render('index.ejs');
+        }
     });
 
     // PROFILE SECTION =========================
@@ -192,4 +214,11 @@ function isLoggedIn(req, res, next) {
         return next();
 
     res.redirect('/');
+}
+//route middleware for REST API
+function isLoggedApi(req, res, next) {
+    if (req.isAuthenticated()) {
+        return next();
+    }
+    res.status(401).send({ error: "Unauthorized" });
 }
